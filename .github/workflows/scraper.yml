@@ -56,8 +56,6 @@ jobs:
               format="%(asctime)s %(levelname)-8s %(name)s — %(message)s",
               datefmt="%H:%M:%S",
           )
-          from dotenv import load_dotenv
-          load_dotenv()
           from main import scan_and_notify_falabella_deals
 
           new_deals = scan_and_notify_falabella_deals(
