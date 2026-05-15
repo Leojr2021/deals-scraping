@@ -6,7 +6,10 @@ from typing import Iterable, List
 
 from dotenv import load_dotenv
 
-load_dotenv()
+try:
+    load_dotenv()
+except Exception:
+    pass 
 
 from deal_filters import filter_deals_by_discount
 from falabella_scraper import BRAND_SEED_URLS, scan_falabella_products
