@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+# seen_falabella_deals.json is tracked so GitHub Actions can persist it between runs
+*.lock

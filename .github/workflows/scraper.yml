@@ -1,0 +1,79 @@
+name: 🔍 Falabella Deal Scraper
+
+on:
+  schedule:
+    # Cada 2 horas, las 24h — las mejores ofertas suelen aparecer de madrugada
+    - cron: '0 */2 * * *'
+
+  # Permite disparar manualmente desde la pestaña Actions en GitHub
+  workflow_dispatch:
+    inputs:
+      min_discount:
+        description: 'Descuento mínimo (%)'
+        required: false
+        default: '50'
+      pages_per_seed:
+        description: 'Páginas por seed URL'
+        required: false
+        default: '2'
+
+jobs:
+  scrape:
+    name: Scrape y notifica ofertas
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: write   # necesario para hacer git push
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependencias Python
+        run: pip install -r requirements.txt
+
+      - name: Instalar Chromium + dependencias del sistema
+        run: playwright install --with-deps chromium
+
+      - name: Ejecutar scraper
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MIN_DISCOUNT: ${{ github.event.inputs.min_discount || '50' }}
+          PAGES_PER_SEED: ${{ github.event.inputs.pages_per_seed || '2' }}
+        run: |
+          python - <<'EOF'
+          import logging, os
+          logging.basicConfig(
+              level=logging.INFO,
+              format="%(asctime)s %(levelname)-8s %(name)s — %(message)s",
+              datefmt="%H:%M:%S",
+          )
+          from dotenv import load_dotenv
+          load_dotenv()
+          from main import scan_and_notify_falabella_deals
+
+          new_deals = scan_and_notify_falabella_deals(
+              min_discount_percent=int(os.environ.get("MIN_DISCOUNT", 50)),
+              include_equal=True,
+              pages_per_seed=int(os.environ.get("PAGES_PER_SEED", 2)),
+              max_deals=30,
+          )
+          print(f"✅ {len(new_deals)} ofertas nuevas enviadas por Telegram.")
+          EOF
+
+      - name: Persistir seen_deals.json en el repo
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add seen_falabella_deals.json
+          git diff --staged --quiet \
+            || git commit -m "chore: actualizar deals vistos [skip ci]"
+          git push
