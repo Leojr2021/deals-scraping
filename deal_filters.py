@@ -5,7 +5,7 @@ from typing import Iterable, List
 
 from price_utils import parse_price_number
 
-ALLOWED_BRANDS = ("ALDO", "adidas", "DIADORA")
+ALLOWED_BRANDS = ("TP LINK","LOGITECH","LENOVO","ASUS","ALDO","CALIMOD","SAMSUNG","ADIDAS TERREX", "ADIDAS ORIGINALS","adidas", "DIADORA","Mango","MAISON 123","LA MARTINA")
 
 
 def get_discount_percent(product: dict) -> int | None:

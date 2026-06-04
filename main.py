@@ -88,7 +88,7 @@ if __name__ == "__main__":
     )
 
     new_deals = scan_and_notify_falabella_deals(
-        min_discount_percent=50,
+        min_discount_percent=55,
         include_equal=False,
         pages_per_seed=2,
         max_deals=20,
